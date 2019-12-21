@@ -5,11 +5,11 @@ rm transferTPS_report addTPS_report
 echo -e "# Benchmark Experiment Report\n" > report
 ### official bin benchmark
 echo -e "## official bin benchmark\n" >> report
-## 4 nodes, solidity, 100 times
-echo -e "### 4 nodes, solidity, 100 times\n" >> report
+## 4 nodes, solidity, 50 times
+echo -e "### 4 nodes, solidity, 50 times\n" >> report
 echo -e "\`\`\`shell\n" >> report
 
-for i in {1..100}  
+for i in {1..50}  
 do  
     bash official_build_chain.sh -n4
     cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
@@ -23,12 +23,12 @@ cat transferTPS_report >> report
 echo -e "\n\`\`\`\n" >> report
 rm addTPS_report transferTPS_report
 
-## 4 nodes, precompile, 100 times
+## 4 nodes, precompile, 50 times
 
-echo -e "### 4 nodes, precompile, 100 times\n" >> report
+echo -e "### 4 nodes, precompile, 50 times\n" >> report
 echo -e "\`\`\`shell\n" >> report
 
-for i in {1..100}  
+for i in {1..50}  
 do  
     bash official_build_chain.sh -n4 -p
     cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
@@ -101,16 +101,16 @@ rm addTPS_report transferTPS_report
 
 
 TPS=0
-PRE_BASE=3000
-SOLIDITY_BASE=2000
+PRE_BASE=3300
+SOLIDITY_BASE=2500
 
 ### signPackage bin benchmark
 echo -e "## signPackage bin benchmark\n" >> report
-## 4 nodes, solidity, 100 times
-echo -e "### 4 nodes, solidity, 100 times\n" >> report
+## 4 nodes, solidity, 50 times
+echo -e "### 4 nodes, solidity, 50 times\n" >> report
 echo -e "\`\`\`shell\n" >> report
 
-for i in {1..100}  
+for i in {1..50}  
 do  
     bash signPackage_build_chain.sh -n4
     cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
@@ -128,12 +128,12 @@ cat transferTPS_report >> report
 echo -e "\n\`\`\`\n" >> report
 rm addTPS_report transferTPS_report
 
-## 4 nodes, precompile, 100 times
+## 4 nodes, precompile, 50 times
 
-echo -e "### 4 nodes, precompile, 100 times\n" >> report
+echo -e "### 4 nodes, precompile, 50 times\n" >> report
 echo -e "\`\`\`shell\n" >> report
 
-for i in {1..100}  
+for i in {1..50}  
 do  
     bash signPackage_build_chain.sh -n4 -p
     cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
@@ -155,7 +155,7 @@ rm addTPS_report transferTPS_report
 
 echo -e "### 8 nodes, precompile, 20 times\n" >> report
 echo -e "\`\`\`shell\n" >> report
-PRE_BASE=1500
+PRE_BASE=2000
 
 for i in {1..20}
 do  
@@ -179,7 +179,7 @@ rm addTPS_report transferTPS_report
 
 echo -e "### 16 nodes, precompile, 20 times\n" >> report
 echo -e "\`\`\`shell\n" >> report
-PRE_BASE=800
+PRE_BASE=1000
 
 for i in {1..20}
 do  
