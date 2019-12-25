@@ -4,8 +4,7 @@ OFFICIAL_BENCHMARK=true
 SIGNPACK_BENCHMARK=true
 
 TPS=0
-PRE_BASE=3300
-SOLIDITY_BASE=3000
+TPS_BASE=3000
 
 
 while getopts "n:so" arg
@@ -90,7 +89,11 @@ signPackBinTest()
             bash signPackage_build_chain.sh -n $NODES
         fi
         cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-        cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
+        TPS=`cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}'`
+        if [ `echo "$TPS < $TPS_BASE" | bc` -eq 1  ]; then
+            cp ./nodes-signPackage/127.0.0.1/node0/log/* ./$NODES_nodes_log_$TPS.log
+        fi
+        echo $TPS >> transferTPS_report
     done
     
     buildMarkDownCode
@@ -134,10 +137,12 @@ signPackageBenchmark()
     signPackBinTest 4 50 true
     
     ## 8 nodes, precompile ,20 times
+    TPS_BASE=2000
     
     signPackBinTest 8 20 true
     
     ## 16 nodes, precompile ,20 times
+    TPS_BASE=1000
     
     signPackBinTest 16 20 true
     
