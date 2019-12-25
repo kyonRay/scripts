@@ -25,6 +25,9 @@ done
 
 start_chain()
 {
+    if [ -d nodes-buildOfficial ] ; then
+        ./nodes-buildOfficial/127.0.0.1/stop_all.sh
+    fi
     rm -rf nodes-buildOfficial/
     bash ./build_chain.sh -e ./fisco-bcos-buildOfficial  -l "127.0.0.1:$NODESNUM" -o nodes-buildOfficial
     cp nodes-buildOfficial/127.0.0.1/sdk/* ./web3sdk-noParallel-buildOfficial/dist/conf/

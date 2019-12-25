@@ -29,6 +29,9 @@ done
 
 start_chain()
 {
+    if [ -d nodes-signPackage ] ; then
+        ./nodes-signPackage/127.0.0.1/stop_all.sh
+    fi
     rm -rf nodes-signPackage/
     if [ $TEST = true  ]; then
         bash ./build_chain.sh -e ./fisco-bcos-signPackage -T -l "127.0.0.1:$NODESNUM" -o nodes-signPackage

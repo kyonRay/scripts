@@ -5,7 +5,7 @@ SIGNPACK_BENCHMARK=true
 
 TPS=0
 PRE_BASE=3300
-SOLIDITY_BASE=2500
+SOLIDITY_BASE=3000
 
 
 while getopts "n:so" arg
@@ -51,9 +51,9 @@ officialBinTest()
     PRE_COMPILE="${3}"
     
     if [ $PRE_COMPILE = true ]; then
-        echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
-    else
         echo -e "### $NODES nodes, precompile, $TIMES times\n" >> report
+    else
+        echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
     fi
     
     for i in $(seq 1  $TIMES)
@@ -77,9 +77,9 @@ signPackBinTest()
     PRE_COMPILE="${3}"
     
     if [ $PRE_COMPILE = true ]; then
-        echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
-    else
         echo -e "### $NODES nodes, precompile, $TIMES times\n" >> report
+    else
+        echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
     fi
     
     for i in $(seq 1  $TIMES)
