@@ -10,27 +10,27 @@ SOLIDITY_BASE=2500
 
 while getopts "n:so" arg
 do
-	case $arg in
-		n)
-			NODESNUM=$OPTARG
-			;;
-		s)
-			SIGNPACK_BENCHMARK=true
+    case $arg in
+        n)
+            NODESNUM=$OPTARG
+        ;;
+        s)
+            SIGNPACK_BENCHMARK=true
             OFFICIAL_BENCHMARK=false
-			echo "SIGNPACK_BENCHMARK = $SIGNPACK_BENCHMARK"
+            echo "SIGNPACK_BENCHMARK = $SIGNPACK_BENCHMARK"
             echo "OFFICIAL_BENCHMARK = $OFFICIAL_BENCHMARK"
-			;;
+        ;;
         o)
             SIGNPACK_BENCHMARK=false
             OFFICIAL_BENCHMARK=true
-			echo "SIGNPACK_BENCHMARK = $SIGNPACK_BENCHMARK"
+            echo "SIGNPACK_BENCHMARK = $SIGNPACK_BENCHMARK"
             echo "OFFICIAL_BENCHMARK = $OFFICIAL_BENCHMARK"
-            ;;
-		?)
-			echo "unknow argument"
-			exit 1
-			;;
-	esac
+        ;;
+        ?)
+            echo "unknow argument"
+            exit 1
+        ;;
+    esac
 done
 
 buildMarkDownCode()
@@ -55,9 +55,9 @@ officialBinTest()
     else
         echo -e "### $NODES nodes, precompile, $TIMES times\n" >> report
     fi
-
+    
     for i in $(seq 1  $TIMES)
-    do  
+    do
         if [ $PRE_COMPILE = true ]; then
             bash official_build_chain.sh -n $NODES -p
         else
@@ -66,7 +66,7 @@ officialBinTest()
         cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
         cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
     done
-
+    
     buildMarkDownCode
 }
 
@@ -81,9 +81,9 @@ signPackBinTest()
     else
         echo -e "### $NODES nodes, precompile, $TIMES times\n" >> report
     fi
-
+    
     for i in $(seq 1  $TIMES)
-    do  
+    do
         if [ $PRE_COMPILE = true ]; then
             bash signPackage_build_chain.sh -n $NODES -p
         else
@@ -92,7 +92,7 @@ signPackBinTest()
         cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
         cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
     done
-
+    
     buildMarkDownCode
 }
 
@@ -101,23 +101,23 @@ officialBenchmark()
     ### official bin benchmark
     echo -e "## official bin benchmark\n" >> report
     ## 4 nodes, solidity, 50 times
-
+    
     officialBinTest 4 50 false
-
+    
     ## 4 nodes, precompile, 50 times
-
+    
     officialBinTest 4 50 true
-
+    
     ## 8 nodes, precompile ,20 times
-
+    
     officialBinTest 8 20 true
-
+    
     ## 16 nodes, precompile ,20 times
-
+    
     officialBinTest 16 20 true
-
+    
     ## 32 nodes, precompile ,10 times
-
+    
     officialBinTest 32 10 true
 }
 
@@ -126,23 +126,23 @@ signPackageBenchmark()
     ### signPackage bin benchmark
     echo -e "## signPackage bin benchmark\n" >> report
     ## 4 nodes, solidity, 50 times
-
+    
     signPackBinTest 4 50 false
-
+    
     ## 4 nodes, precompile, 50 times
-
+    
     signPackBinTest 4 50 true
-
+    
     ## 8 nodes, precompile ,20 times
-
+    
     signPackBinTest 8 20 true
-
+    
     ## 16 nodes, precompile ,20 times
-
+    
     signPackBinTest 16 20 true
-
+    
     ## 32 nodes, precompile ,10 times
-
+    
     signPackBinTest 32 10 true
 }
 

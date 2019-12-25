@@ -10,7 +10,7 @@ function Usage()
 log_file="${1}"
 if [ $# -eq 1 ];then
     if [ "${log_file}"="-h" ]||[ "${log_file}"="--help" ];then
-       Usage
+        Usage
     fi
 fi
 if [ $# -lt 3 ];then
@@ -27,20 +27,20 @@ statistic_start=${start_time}
 started="0"
 for time in ${timeList}
 do
-   if [ "${time}" \> "${start_time}" ]&&[ "${time}" \< "$end_time" ];then
-	#echo "====time:${time}"
+    if [ "${time}" \> "${start_time}" ]&&[ "${time}" \< "$end_time" ];then
+        #echo "====time:${time}"
         if [ "${started}" == "0" ];then
-           started="1"
-           statistic_start="${time}"  
+            started="1"
+            statistic_start="${time}"
         else
-   	txList=$(grep Report "${log_file}" | grep PBFT| grep ${time} | awk -F',' '{print $6}' | cut -d'=' -f2 )
-   	for tx in ${txList}
-   	do
-  	    txTotal=$((txTotal+tx))
-   	done
-        statistic_end=${time}
+            txList=$(grep Report "${log_file}" | grep PBFT| grep ${time} | awk -F',' '{print $6}' | cut -d'=' -f2 )
+            for tx in ${txList}
+            do
+                txTotal=$((txTotal+tx))
+            done
+            statistic_end=${time}
         fi
-   fi
+    fi
 done
 echo "statistic_end = ${statistic_end}"
 echo "statistic_start = ${statistic_start}"
