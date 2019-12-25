@@ -1,220 +1,160 @@
 #!/bin/bash
 
-rm transferTPS_report addTPS_report
-
-echo -e "# Benchmark Experiment Report\n" > report
-### official bin benchmark
-echo -e "## official bin benchmark\n" >> report
-## 4 nodes, solidity, 50 times
-echo -e "### 4 nodes, solidity, 50 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
-
-for i in {1..50}  
-do  
-    bash official_build_chain.sh -n4
-    cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
-done
-
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
-
-## 4 nodes, precompile, 50 times
-
-echo -e "### 4 nodes, precompile, 50 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
-
-for i in {1..50}  
-do  
-    bash official_build_chain.sh -n4 -p
-    cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
-done
-
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
-
-## 8 nodes, precompile ,20 times
-
-echo -e "### 8 nodes, precompile, 20 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
-
-for i in {1..20}
-do  
-    bash official_build_chain.sh -n8 -p
-    cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
-done
-
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
-
-## 16 nodes, precompile ,20 times
-
-echo -e "### 16 nodes, precompile, 20 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
-
-for i in {1..20}
-do  
-    bash official_build_chain.sh -n16 -p
-    cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
-done
-
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
-
-## 32 nodes, precompile ,10 times
-
-echo -e "### 32 nodes, precompile, 10 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
-
-for i in {1..10}
-do  
-    bash official_build_chain.sh -n32 -p
-    cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
-done
-
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
-
+OFFICIAL_BENCHMARK=true
+SIGNPACK_BENCHMARK=true
 
 TPS=0
 PRE_BASE=3300
 SOLIDITY_BASE=2500
 
-### signPackage bin benchmark
-echo -e "## signPackage bin benchmark\n" >> report
-## 4 nodes, solidity, 50 times
-echo -e "### 4 nodes, solidity, 50 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
 
-for i in {1..50}  
-do  
-    bash signPackage_build_chain.sh -n4
-    cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    TPS=`cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}'`
-    if [ `echo "$TPS < $SOLIDITY_BASE" | bc` -eq 1  ]; then
-        cp ./nodes-signPackage/127.0.0.1/node0/log/* ./solidity_log_$i.log
+while getopts "n:so" arg
+do
+	case $arg in
+		n)
+			NODESNUM=$OPTARG
+			;;
+		s)
+			SIGNPACK_BENCHMARK=true
+            OFFICIAL_BENCHMARK=false
+			echo "SIGNPACK_BENCHMARK = $SIGNPACK_BENCHMARK"
+            echo "OFFICIAL_BENCHMARK = $OFFICIAL_BENCHMARK"
+			;;
+        o)
+            SIGNPACK_BENCHMARK=false
+            OFFICIAL_BENCHMARK=true
+			echo "SIGNPACK_BENCHMARK = $SIGNPACK_BENCHMARK"
+            echo "OFFICIAL_BENCHMARK = $OFFICIAL_BENCHMARK"
+            ;;
+		?)
+			echo "unknow argument"
+			exit 1
+			;;
+	esac
+done
+
+buildMarkDownCode()
+{
+    echo -e "\`\`\`shell\n" >> report
+    echo -e "# addTPS\n" >> report
+    cat addTPS_report >> report
+    echo -e "\n\n# transferTPS\n" >> report
+    cat transferTPS_report >> report
+    echo -e "\n\`\`\`\n" >> report
+    rm addTPS_report transferTPS_report
+}
+
+officialBinTest()
+{
+    NODES="${1}"
+    TIMES="${2}"
+    PRE_COMPILE="${3}"
+    
+    if [ $PRE_COMPILE = true ]; then
+        echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
+    else
+        echo -e "### $NODES nodes, precompile, $TIMES times\n" >> report
     fi
-    echo $TPS >> transferTPS_report
-done
 
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
+    for i in $(seq 1  $TIMES)
+    do  
+        if [ $PRE_COMPILE = true ]; then
+            bash official_build_chain.sh -n $NODES -p
+        else
+            bash official_build_chain.sh -n $NODES
+        fi
+        cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
+        cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
+    done
 
-## 4 nodes, precompile, 50 times
+    buildMarkDownCode
+}
 
-echo -e "### 4 nodes, precompile, 50 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
-
-for i in {1..50}  
-do  
-    bash signPackage_build_chain.sh -n4 -p
-    cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    TPS=`cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}'`
-    if [ `echo "$TPS < $PRE_BASE" | bc` -eq 1  ]; then
-        cp ./nodes-signPackage/127.0.0.1/node0/log/* ./precompile_4nodes_$i.log
+signPackBinTest()
+{
+    NODES="${1}"
+    TIMES="${2}"
+    PRE_COMPILE="${3}"
+    
+    if [ $PRE_COMPILE = true ]; then
+        echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
+    else
+        echo -e "### $NODES nodes, precompile, $TIMES times\n" >> report
     fi
-    echo $TPS >> transferTPS_report
-done
 
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
+    for i in $(seq 1  $TIMES)
+    do  
+        if [ $PRE_COMPILE = true ]; then
+            bash signPackage_build_chain.sh -n $NODES -p
+        else
+            bash signPackage_build_chain.sh -n $NODES
+        fi
+        cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
+        cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
+    done
 
-## 8 nodes, precompile ,20 times
+    buildMarkDownCode
+}
 
-echo -e "### 8 nodes, precompile, 20 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
-PRE_BASE=2000
+officialBenchmark()
+{
+    ### official bin benchmark
+    echo -e "## official bin benchmark\n" >> report
+    ## 4 nodes, solidity, 50 times
 
-for i in {1..20}
-do  
-    bash signPackage_build_chain.sh -n8 -p
-    cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    TPS=`cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}'`
-    if [ `echo "$TPS < $PRE_BASE" | bc` -eq 1  ]; then
-        cp ./nodes-signPackage/127.0.0.1/node0/log/* ./precompile_8nodes_$i.log
-    fi
-    echo $TPS >> transferTPS_report
-done
+    officialBinTest 4 50 false
 
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
+    ## 4 nodes, precompile, 50 times
 
-## 16 nodes, precompile ,20 times
+    officialBinTest 4 50 true
 
-echo -e "### 16 nodes, precompile, 20 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
-PRE_BASE=1000
+    ## 8 nodes, precompile ,20 times
 
-for i in {1..20}
-do  
-    bash signPackage_build_chain.sh -n16 -p
-    cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    TPS=`cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}'`
-    if [ `echo "$TPS < $PRE_BASE" | bc` -eq 1  ]; then
-        cp ./nodes-signPackage/127.0.0.1/node0/log/* ./precompile_16nodes_$i.log
-    fi
-    echo $TPS >> transferTPS_report
-done
+    officialBinTest 8 20 true
 
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
+    ## 16 nodes, precompile ,20 times
 
-## 32 nodes, precompile ,10 times
+    officialBinTest 16 20 true
 
-echo -e "### 32 nodes, precompile, 10 times\n" >> report
-echo -e "\`\`\`shell\n" >> report
+    ## 32 nodes, precompile ,10 times
 
-for i in {1..10}
-do  
-    bash signPackage_build_chain.sh -n32 -p
-    cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-    cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
-done
+    officialBinTest 32 10 true
+}
 
-echo -e "# addTPS\n" >> report
-cat addTPS_report >> report
-echo -e "\n\n# transferTPS\n" >> report
-cat transferTPS_report >> report
-echo -e "\n\`\`\`\n" >> report
-rm addTPS_report transferTPS_report
+signPackageBenchmark()
+{
+    ### signPackage bin benchmark
+    echo -e "## signPackage bin benchmark\n" >> report
+    ## 4 nodes, solidity, 50 times
 
+    signPackBinTest 4 50 false
+
+    ## 4 nodes, precompile, 50 times
+
+    signPackBinTest 4 50 true
+
+    ## 8 nodes, precompile ,20 times
+
+    signPackBinTest 8 20 true
+
+    ## 16 nodes, precompile ,20 times
+
+    signPackBinTest 16 20 true
+
+    ## 32 nodes, precompile ,10 times
+
+    signPackBinTest 32 10 true
+}
+
+
+rm transferTPS_report addTPS_report
+
+echo -e "# Benchmark Experiment Report\n" > report
+
+if [ $OFFICIAL_BENCHMARK = true ] ; then
+    officialBenchmark
+fi
+
+if [ $SIGNPACK_BENCHMARK = true ] ; then
+    signPackageBenchmark
+fi
