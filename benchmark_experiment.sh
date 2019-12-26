@@ -71,11 +71,11 @@ officialBinTest()
 
 collectLogs()
 {
-    NODES="${1}"
+    NODE_NUM="${1}"
     TPS="${2}"
-    mkdir -p "logs_${NODES}nodes_${TPS}"
-    ((NODES--))
-    for i in $(seq 0 $NODES)
+    mkdir -p "logs_${NODE_NUM}nodes_${TPS}"
+    ((NODE_NUM--))
+    for i in $(seq 0 $NODE_NUM)
     do
         mkdir -p ./"logs_${1}nodes_${TPS}"/"node$i"
         cp ./nodes-signPackage/127.0.0.1/node$i/log/* ./"logs_${1}nodes_${TPS}"/"node$i"/
@@ -161,6 +161,7 @@ signPackageBenchmark()
     signPackBinTest 16 20 true
     
     ## 32 nodes, precompile ,10 times
+    TPS_BASE=300
     
     signPackBinTest 32 10 true
 }
