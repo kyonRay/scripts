@@ -69,6 +69,19 @@ officialBinTest()
     buildMarkDownCode
 }
 
+collectLogs()
+{
+    NODES="${1}"
+    TPS="${2}"
+    mkdir -p "logs_${NODES}nodes_${TPS}"
+    ((NODES--))
+    for i in $(seq 0 $NODES)
+    do
+        mkdir -p ./"logs_${1}nodes_${TPS}"/"node$i"
+        cp ./nodes-signPackage/127.0.0.1/node$i/log/* ./"logs_${1}nodes_${TPS}"/"node$i"/
+    done
+}
+
 signPackBinTest()
 {
     NODES="${1}"
@@ -91,7 +104,7 @@ signPackBinTest()
         cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
         TPS=`cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}'`
         if [ `echo "$TPS < $TPS_BASE" | bc` -eq 1  ]; then
-            cp ./nodes-signPackage/127.0.0.1/node0/log/* ./$NODES_nodes_log_$TPS.log
+            collectLogs $NODES $TPS
         fi
         echo $TPS >> transferTPS_report
     done
@@ -133,7 +146,8 @@ signPackageBenchmark()
     signPackBinTest 4 50 false
     
     ## 4 nodes, precompile, 50 times
-    
+    TPS_BASE=3300
+
     signPackBinTest 4 50 true
     
     ## 8 nodes, precompile ,20 times
