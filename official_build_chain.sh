@@ -31,7 +31,6 @@ start_chain()
     rm -rf nodes-buildOfficial/
     bash ./build_chain.sh -e ./fisco-bcos-buildOfficial  -l "127.0.0.1:$NODESNUM" -o nodes-buildOfficial
     cp nodes-buildOfficial/127.0.0.1/sdk/* ./web3sdk-noParallel-buildOfficial/dist/conf/
-    cp nodes-buildOfficial/127.0.0.1/sdk/* ./web3sdk-noParallel-signPackage/dist/conf/
     ./nodes-buildOfficial/127.0.0.1/start_all.sh
     
     START_NODE=`ps -ef | grep fisco-bcos | grep -v grep | wc -l`
@@ -53,23 +52,19 @@ start_java(){
     if [  $PRECOMPILE = true ]; then
         echo "precompile test"
         #userAdd
-        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 add 10000 2500 user1
-        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 add 10000 2500 user2
+        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 add 10000 2500 user
         # transfer
         START=$(date "+%H:%M:%S")
-        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 transfer 100000 4000 user1 2 &
-        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 transfer 100000 4000 user2 2
+        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 transfer 100000 4000 user 2 &
         END=$(date "+%H:%M:%S")
         bash get_tps.sh nodes-buildOfficial/127.0.0.1/node0/log/log_2*.log $START $END | grep tps | awk '{print $10}' | tee tps_report
     else
         echo "solidity test"
         #userAdd
-        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 add 10000 2500 user1
-        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 add 10000 2500 user2
+        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 add 10000 2500 user
         # transfer
         START=$(date "+%H:%M:%S")
-        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 transfer 100000 4000 user2 2 &
-        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 transfer 100000 4000 user1 2
+        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 transfer 100000 4000 user 2
         END=$(date "+%H:%M:%S")
         bash get_tps.sh nodes-buildOfficial/127.0.0.1/node0/log/log_2*.log $START $END | grep tps | awk '{print $10}' | tee tps_report
     fi
