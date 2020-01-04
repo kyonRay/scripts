@@ -99,6 +99,10 @@ signPackBinTest()
             bash signPackage_build_chain.sh -n $NODES
         fi
         TPS=`cat tps_report`
+        if ! grep '^[[:digit:]]*$' <<< "$TPS";then
+            echo "TPS error"
+            exit 1
+        fi
         if [ `echo "$TPS < $TPS_BASE" | bc` -eq 1  ]; then
             collectLogs $NODES $TPS
         fi
@@ -150,9 +154,6 @@ signPackageBenchmark()
     signPackBinTest 7 50 true
     signPackBinTest 8 50 true
 }
-
-
-rm transferTPS_report addTPS_report
 
 echo -e "# Benchmark Experiment Report\n" > report
 
