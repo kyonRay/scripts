@@ -39,6 +39,7 @@ start_chain()
         bash ./build_chain.sh -e ./fisco-bcos-signPackage -l "127.0.0.1:$NODESNUM" -o nodes-signPackage
     fi
     cp nodes-signPackage/127.0.0.1/sdk/* ./web3sdk-noParallel-signPackage/dist/conf/
+    cp nodes-signPackage/127.0.0.1/sdk/* ./web3sdk-noParallel-buildOfficial/dist/conf/
     ./nodes-signPackage/127.0.0.1/start_all.sh
     
     START_NODE=`ps -ef | grep fisco-bcos | grep -v grep | wc -l`
@@ -57,18 +58,32 @@ start_chain()
 }
 
 start_java(){
-    cd ./web3sdk-noParallel-signPackage/dist
     if [  $PRECOMPILE = true ]; then
         echo "precompile test"
-        ./java_tps_test.sh
+        #userAdd
+        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 add 10000 2500 user
+        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 add 10000 2500 user
+        # transfer
+        START=$(date "+%H:%M:%S")
+        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 transfer 100000 4000 user 2 &
+        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 transfer 100000 4000 user 2 &
+        END=$(date "+%H:%M:%S")
+        bash get_tps.sh nodes-signPackage/127.0.0.1/node0/log/log_2*.log $START $END > tps_report
     else
         echo "solidity test"
-        ./java_tps_test.sh 1
+        #userAdd
+        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 add 10000 2500 user
+        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 add 10000 2500 user
+        # transfer
+        START=$(date "+%H:%M:%S")
+        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 transfer 100000 4000 user 2 &
+        java -cp ./web3sdk-noParallel-buildOfficial/dist/conf/:./web3sdk-noParallel-buildOfficial/dist/lib/*:./web3sdk-noParallel-buildOfficial/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 transfer 100000 4000 user 2 &
+        END=$(date "+%H:%M:%S")
+        bash get_tps.sh nodes-signPackage/127.0.0.1/node0/log/log_2*.log $START $END > tps_report
     fi
 }
 
 stop_chain(){
-    cd ../../
     ./nodes-signPackage/127.0.0.1/stop_all.sh
     START_NODE=`ps -ef | grep fisco-bcos | grep -v grep | wc -l`
     LOOP_TIMES=0

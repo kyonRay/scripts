@@ -35,12 +35,10 @@ done
 buildMarkDownCode()
 {
     echo -e "\`\`\`shell\n" >> report
-    echo -e "# addTPS\n" >> report
-    cat addTPS_report >> report
-    echo -e "\n\n# transferTPS\n" >> report
+    echo -e "# transferTPS\n" >> report
     cat transferTPS_report >> report
     echo -e "\n\`\`\`\n" >> report
-    rm addTPS_report transferTPS_report
+    rm transferTPS_report
 }
 
 officialBinTest()
@@ -62,8 +60,7 @@ officialBinTest()
         else
             bash official_build_chain.sh -n $NODES
         fi
-        cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-        cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
+        cat tps_report >> transferTPS_report
     done
     
     buildMarkDownCode
@@ -101,8 +98,7 @@ signPackBinTest()
         else
             bash signPackage_build_chain.sh -n $NODES
         fi
-        cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-        TPS=`cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}'`
+        TPS=`cat tps_report`
         if [ `echo "$TPS < $TPS_BASE" | bc` -eq 1  ]; then
             collectLogs $NODES $TPS
         fi
