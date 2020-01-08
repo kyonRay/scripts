@@ -3,6 +3,7 @@
 NODESNUM=4
 PRECOMPILE=false
 START_NODE=0
+REMOTE=false
 
 while getopts "n:p" arg
 do
@@ -14,6 +15,10 @@ do
         p)
             PRECOMPILE=true
             echo "precompile=$PRECOMPILE"
+        ;;
+        r)
+            REMOTE=true
+            echo "remote mode, remote sdk: 192.168.122.13"
         ;;
         ?)
             echo "unknow argument"
@@ -49,6 +54,17 @@ start_chain()
 }
 
 start_java(){
+    if [ $REMOTE = true ]; then
+        if [  $PRECOMPILE = true ]; then
+            echo "precompile test"
+            ssh bc@192.168.122.13 "bash java_tps_test.sh -n $NODESNUM -p -o"
+        else
+            echo "solidity test"
+            ssh bc@192.168.122.13 "bash java_tps_test.sh -n $NODESNUM -o"
+        fi
+        scp bc@192.168.122.13:~/tps_report .
+        return
+    fi
     if [  $PRECOMPILE = true ]; then
         echo "precompile test"
         #userAdd

@@ -3,8 +3,9 @@
 NODESNUM=4
 PRECOMPILE=false
 TEST=false
+REMOTE=false
 
-while getopts "n:pt" arg
+while getopts "n:ptr" arg
 do
     case $arg in
         n)
@@ -18,6 +19,10 @@ do
         t)
             TEST=true
             echo "test mode, log(DEBUG)"
+        ;;
+        r)
+            REMOTE=true
+            echo "remote mode, remote sdk: 192.168.122.13"
         ;;
         ?)
             echo "unknow argument"
@@ -38,7 +43,11 @@ start_chain()
     else
         bash ./build_chain.sh -e ./fisco-bcos-signPackage -l "127.0.0.1:$NODESNUM" -o nodes-signPackage
     fi
-    cp nodes-signPackage/127.0.0.1/sdk/* ./web3sdk-noParallel-signPackage/dist/conf/
+    if [ $REMOTE = true ]; then
+        scp ./nodes-signPackage/127.0.0.1/sdk/* bc@192.168.122.13:~/web3sdk-noParallel-signPackage/dist/conf/
+    else
+        cp nodes-signPackage/127.0.0.1/sdk/* ./web3sdk-noParallel-signPackage/dist/conf/
+    fi
     ./nodes-signPackage/127.0.0.1/start_all.sh
     
     START_NODE=`ps -ef | grep fisco-bcos | grep -v grep | wc -l`
@@ -57,6 +66,17 @@ start_chain()
 }
 
 start_java(){
+    if [ $REMOTE = true ]; then
+        if [  $PRECOMPILE = true ]; then
+            echo "precompile test"
+            ssh bc@192.168.122.13 "bash java_tps_test.sh -n $NODESNUM -p"
+        else
+            echo "solidity test"
+            ssh bc@192.168.122.13 "bash java_tps_test.sh -n $NODESNUM"
+        fi
+        scp bc@192.168.122.13:~/tps_report .
+        return
+    fi
     if [  $PRECOMPILE = true ]; then
         echo "precompile test"
         #userAdd
