@@ -50,7 +50,7 @@ fi
 
 
 rm -rf ./web3sdk-noParallel-signPackage/dist/conf/applicationContext.xml
-mv ./web3sdk-noParallel-signPackage/dist/conf/applicationContext-${NODESNUM}.xml ./web3sdk-noParallel-signPackage/dist/conf/applicationContext.xml
+cp ./web3sdk-noParallel-signPackage/dist/conf/applicationContext-${NODESNUM}.xml ./web3sdk-noParallel-signPackage/dist/conf/applicationContext.xml
 
 if [  $PRECOMPILE = true ]; then
     echo "precompile test"
