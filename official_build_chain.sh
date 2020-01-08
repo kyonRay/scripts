@@ -34,7 +34,7 @@ start_chain()
         ./nodes-buildOfficial/127.0.0.1/stop_all.sh
     fi
     rm -rf nodes-buildOfficial/
-    bash ./build_chain.sh -e ./fisco-bcos-buildOfficial  -l "127.0.0.1:$NODESNUM" -o nodes-buildOfficial
+    bash ./build_chain.sh -e ./fisco-bcos-buildOfficial  -l "127.0.0.1:$NODESNUM" -i -o nodes-buildOfficial
     if [ $REMOTE = true ]; then
         scp ./nodes-buildOfficial/127.0.0.1/sdk/* bc@192.168.122.13:~/web3sdk-noParallel-buildOfficial/dist/conf/
     else

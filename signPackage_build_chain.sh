@@ -39,9 +39,9 @@ start_chain()
     fi
     rm -rf nodes-signPackage/
     if [ $TEST = true  ]; then
-        bash ./build_chain.sh -e ./fisco-bcos-signPackage -T -l "127.0.0.1:$NODESNUM" -o nodes-signPackage
+        bash ./build_chain.sh -e ./fisco-bcos-signPackage -T -l "127.0.0.1:$NODESNUM" -i -o nodes-signPackage
     else
-        bash ./build_chain.sh -e ./fisco-bcos-signPackage -l "127.0.0.1:$NODESNUM" -o nodes-signPackage
+        bash ./build_chain.sh -e ./fisco-bcos-signPackage -l "127.0.0.1:$NODESNUM" -i -o nodes-signPackage
     fi
     if [ $REMOTE = true ]; then
         scp ./nodes-signPackage/127.0.0.1/sdk/* bc@192.168.122.13:~/web3sdk-noParallel-signPackage/dist/conf/
