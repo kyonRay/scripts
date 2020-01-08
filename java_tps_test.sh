@@ -28,7 +28,7 @@ done
 
 if [ $OFFICIAL_TEST = true ]; then
     rm -rf ./web3sdk-noParallel-buildOfficial/dist/conf/applicationContext.xml
-    mv ./web3sdk-noParallel-buildOfficial/dist/conf/applicationContext-$NODESNUM.xml ./web3sdk-noParallel-buildOfficial/dist/conf/applicationContext.xml
+    cp ./web3sdk-noParallel-buildOfficial/dist/conf/applicationContext-$NODESNUM.xml ./web3sdk-noParallel-buildOfficial/dist/conf/applicationContext.xml
 
     if [  $PRECOMPILE = true ]; then
         echo "precompile test"

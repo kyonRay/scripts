@@ -79,16 +79,10 @@ start_java(){
     fi
     if [  $PRECOMPILE = true ]; then
         echo "precompile test"
-        #userAdd
-        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 add 10000 2500 user
-        # transfer
-        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.precompile.PerformanceDT 1 transfer 100000 4000 user 2 | grep TPS | awk '{print $2}' | tee tps_report
+        bash java_tps_test.sh -n $NODESNUM -p
     else
         echo "solidity test"
-        #userAdd
-        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 add 10000 2500 user
-        # transfer
-        java -cp ./web3sdk-noParallel-signPackage/dist/conf/:./web3sdk-noParallel-signPackage/dist/lib/*:./web3sdk-noParallel-signPackage/dist/apps/* org.fisco.bcos.channel.test.parallel.parallelok.PerformanceDT 1 transfer 100000 4000 user 2 | grep TPS | awk '{print $2}' | tee tps_report
+        bash java_tps_test.sh -n $NODESNUM
     fi
 }
 
