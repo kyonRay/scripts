@@ -5,9 +5,9 @@ SIGNPACK_BENCHMARK=true
 
 TPS=0
 TPS_BASE=3000
+REMOTE=false
 
-
-while getopts "n:so" arg
+while getopts "n:sor" arg
 do
     case $arg in
         n)
@@ -25,6 +25,9 @@ do
             echo "SIGNPACK_BENCHMARK = $SIGNPACK_BENCHMARK"
             echo "OFFICIAL_BENCHMARK = $OFFICIAL_BENCHMARK"
         ;;
+	r)
+	    REMOTE=true
+	;;
         ?)
             echo "unknow argument"
             exit 1
@@ -56,9 +59,17 @@ officialBinTest()
     for i in $(seq 1  $TIMES)
     do
         if [ $PRE_COMPILE = true ]; then
-            bash official_build_chain.sh -n $NODES -p
+		if [ $REMOTE = true ];then
+			bash official_build_chain.sh -n $NODES -p -r
+		else
+            		bash official_build_chain.sh -n $NODES -p
+		fi
         else
-            bash official_build_chain.sh -n $NODES
+		if [ $REMOTE = true ];then
+			bash official_build_chain.sh -n $NODES -r
+		else
+            		bash official_build_chain.sh -n $NODES
+		fi
         fi
         cat tps_report >> transferTPS_report
     done
@@ -94,13 +105,21 @@ signPackBinTest()
     for i in $(seq 1  $TIMES)
     do
         if [ $PRE_COMPILE = true ]; then
-            bash signPackage_build_chain.sh -n $NODES -p
+		if [ $REMOTE = true ]; then
+			bash signPackage_build_chain.sh -n $NODES -p -r
+		else
+			bash signPackage_build_chain.sh -n $NODES -p
+		fi
         else
-            bash signPackage_build_chain.sh -n $NODES
+		if [ $REMOTE = true ]; then
+			bash signPackage_build_chain.sh -n $NODES -r
+		else
+            		bash signPackage_build_chain.sh -n $NODES
+		fi
         fi
         TPS=`cat tps_report`
         if [ `echo "$TPS < $TPS_BASE" | bc` -eq 1  ]; then
-            collectLogs $NODES $TPS
+           collectLogs $NODES $TPS
         fi
         echo $TPS >> transferTPS_report
     done
@@ -136,27 +155,51 @@ signPackageBenchmark()
     TPS_BASE=2000
     ## 4-8 nodes, solidity, 50 times 
     signPackBinTest 4 50 false
-    TPS_BASE=0
+    cat report | mutt -s "signPackBinTest 4 50 false finished"  -- 787622351@qq.com
+    TPS_BASE=1500
     signPackBinTest 5 50 false
+    cat report | mutt -s "signPackBinTest 5 50 false finished"  -- 787622351@qq.com
+    TPS_BASE=1100
     signPackBinTest 6 50 false
+    cat report | mutt -s "signPackBinTest 6 50 false finished"  -- 787622351@qq.com
+    TPS_BASE=1000
     signPackBinTest 7 50 false
+    cat report | mutt -s "signPackBinTest 7 50 false finished"  -- 787622351@qq.com
+    TPS_BASE=900
     signPackBinTest 8 50 false
+    cat report | mutt -s "signPackBinTest 8 50 false finished"  -- 787622351@qq.com
     ## 4 nodes, precompile, 50 times
     TPS_BASE=2200
     signPackBinTest 4 50 true
-    TPS_BASE=0
+    cat report | mutt -s "signPackBinTest 4 50 true finished"  -- 787622351@qq.com
+    TPS_BASE=1800
     signPackBinTest 5 50 true
+    cat report | mutt -s "signPackBinTest 5 50 true finished"  -- 787622351@qq.com
+    TPS_BASE=1500
     signPackBinTest 6 50 true
+    cat report | mutt -s "signPackBinTest 6 50 true finished"  -- 787622351@qq.com
+    TPS_BASE=1100
     signPackBinTest 7 50 true
+    cat report | mutt -s "signPackBinTest 7 50 true finished"  -- 787622351@qq.com
+    TPS_BASE=1000
     signPackBinTest 8 50 true
+    cat report | mutt -s "signPackBinTest 8 50 true finished"  -- 787622351@qq.com
 }
 
 echo -e "# Benchmark Experiment Report\n" > report
+
+if [ $SIGNPACK_BENCHMARK = true ] ; then
+    signPackageBenchmark
+fi
 
 if [ $OFFICIAL_BENCHMARK = true ] ; then
     officialBenchmark
 fi
 
-if [ $SIGNPACK_BENCHMARK = true ] ; then
-    signPackageBenchmark
-fi
+TIME=$(date "+%Y%m%d_%H%M%S")
+mkdir -p "tps_logs_$TIME"
+mv ./logs_* ./"tps_logs_$TIME"
+cp report ./"tps_logs_$TIME"
+tar -czf ./tps.tar.gz ./"tps_logs_$TIME"
+cat report | mutt -s "tps test finished" -a /home/bc/consensus/tps.tar.gz -- 787622351@qq.com
+rm -rf tps.tar.gz
