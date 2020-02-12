@@ -87,6 +87,7 @@ collectLogs()
     do
         mkdir -p ./"logs_${1}nodes_${TPS}"/"node$i"
         cp ./nodes-signPackage/127.0.0.1/node$i/log/* ./"logs_${1}nodes_${TPS}"/"node$i"/
+        sed -i "/Send transaction to peer/d;/Receive peer txs packet/d;/Import peer transactions/d;/Receive packet from/d" ./"logs_${1}nodes_${TPS}"/"node$i"/*
     done
 }
 
