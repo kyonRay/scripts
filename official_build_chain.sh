@@ -3,9 +3,10 @@
 NODESNUM=4
 PRECOMPILE=false
 START_NODE=0
+TEST=false
 REMOTE=false
 
-while getopts "n:pr" arg
+while getopts "n:prt" arg
 do
     case $arg in
         n)
@@ -15,6 +16,10 @@ do
         p)
             PRECOMPILE=true
             echo "precompile=$PRECOMPILE"
+        ;;
+        t)
+            TEST=true
+            echo "test mode, log(DEBUG)"
         ;;
         r)
             REMOTE=true
@@ -34,7 +39,12 @@ start_chain()
         ./nodes-buildOfficial/127.0.0.1/stop_all.sh
     fi
     rm -rf nodes-buildOfficial/
-    bash ./build_chain.sh -e ./fisco-bcos-buildOfficial  -l "127.0.0.1:$NODESNUM" -i -o nodes-buildOfficial
+    if [ $TEST = true  ]; then
+        bash ./build_chain.sh -e ./fisco-bcos-buildOfficial  -l "127.0.0.1:$NODESNUM" -i -o nodes-buildOfficial -T
+    else
+        bash ./build_chain.sh -e ./fisco-bcos-buildOfficial  -l "127.0.0.1:$NODESNUM" -i -o nodes-buildOfficial
+    fi
+    
     if [ $REMOTE = true ]; then
         scp ./nodes-buildOfficial/127.0.0.1/sdk/* bc@192.168.122.13:~/web3sdk-noParallel-buildOfficial/dist/conf/
     else
