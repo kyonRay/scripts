@@ -2,12 +2,13 @@
 
 OFFICIAL_BENCHMARK=true
 SIGNPACK_BENCHMARK=true
+DEBUG=false
 
 TPS=0
 TPS_BASE=3000
+REMOTE=false
 
-
-while getopts "n:so" arg
+while getopts "n:sort" arg
 do
     case $arg in
         n)
@@ -25,6 +26,12 @@ do
             echo "SIGNPACK_BENCHMARK = $SIGNPACK_BENCHMARK"
             echo "OFFICIAL_BENCHMARK = $OFFICIAL_BENCHMARK"
         ;;
+        r)
+            REMOTE=true
+        ;;
+        t)
+            DEBUG=true
+        ;;
         ?)
             echo "unknow argument"
             exit 1
@@ -35,12 +42,9 @@ done
 buildMarkDownCode()
 {
     echo -e "\`\`\`shell\n" >> report
-    echo -e "# addTPS\n" >> report
-    cat addTPS_report >> report
-    echo -e "\n\n# transferTPS\n" >> report
+    echo -e "# transferTPS\n" >> report
     cat transferTPS_report >> report
     echo -e "\n\`\`\`\n" >> report
-    rm addTPS_report transferTPS_report
 }
 
 officialBinTest()
@@ -58,12 +62,35 @@ officialBinTest()
     for i in $(seq 1  $TIMES)
     do
         if [ $PRE_COMPILE = true ]; then
-            bash official_build_chain.sh -n $NODES -p
+            if [ $REMOTE = true ];then
+                if [ $DEBUG = true ];then
+                    bash official_build_chain.sh -n $NODES -p -r -t
+                else
+                    bash official_build_chain.sh -n $NODES -p -r
+                fi
+            else
+                if [ $DEBUG = true ];then
+                    bash official_build_chain.sh -n $NODES -p -t
+                else
+                    bash official_build_chain.sh -n $NODES -p
+                fi
+            fi
         else
-            bash official_build_chain.sh -n $NODES
+            if [ $REMOTE = true ];then
+                if [ $DEBUG = true ];then
+                    bash official_build_chain.sh -n $NODES -r -t
+                else
+                    bash official_build_chain.sh -n $NODES -r
+                fi
+            else
+                if [ $DEBUG = true ];then
+                    bash official_build_chain.sh -n $NODES -t
+                else
+                    bash official_build_chain.sh -n $NODES
+                fi
+            fi
         fi
-        cat web3sdk-noParallel-buildOfficial/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-        cat web3sdk-noParallel-buildOfficial/dist/transferTPS | grep TPS | awk '{print $2}' >> transferTPS_report
+        cat tps_report >> transferTPS_report
     done
     
     buildMarkDownCode
@@ -79,6 +106,7 @@ collectLogs()
     do
         mkdir -p ./"logs_${1}nodes_${TPS}"/"node$i"
         cp ./nodes-signPackage/127.0.0.1/node$i/log/* ./"logs_${1}nodes_${TPS}"/"node$i"/
+        sed -i "/Send transaction to peer/d;/Receive peer txs packet/d;/Import peer transactions/d;/Receive packet from/d" ./"logs_${1}nodes_${TPS}"/"node$i"/*
     done
 }
 
@@ -93,16 +121,43 @@ signPackBinTest()
     else
         echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
     fi
-    
+
+    if [ -e transferTPS_report ];then
+        rm transferTPS_report
+    fi
+
     for i in $(seq 1  $TIMES)
     do
         if [ $PRE_COMPILE = true ]; then
-            bash signPackage_build_chain.sh -n $NODES -p
+            if [ $REMOTE = true ]; then
+                if [ $DEBUG = true ];then
+                    bash signPackage_build_chain.sh -n $NODES -p -r -t
+                else
+                    bash signPackage_build_chain.sh -n $NODES -p -r
+                fi
+            else
+                if [ $DEBUG = true ];then
+                    bash signPackage_build_chain.sh -n $NODES -p -t
+                else
+                    bash signPackage_build_chain.sh -n $NODES -p
+                fi
+            fi
         else
-            bash signPackage_build_chain.sh -n $NODES
+            if [ $REMOTE = true ]; then
+                if [ $DEBUG = true ];then
+                    bash signPackage_build_chain.sh -n $NODES -r -t
+                else
+                    bash signPackage_build_chain.sh -n $NODES -r
+                fi
+            else
+                if [ $DEBUG = true ];then
+                    bash signPackage_build_chain.sh -n $NODES -t
+                else
+                    bash signPackage_build_chain.sh -n $NODES
+                fi
+            fi
         fi
-        cat web3sdk-noParallel-signPackage/dist/addTPS | grep TPS | awk '{print $2}' >> addTPS_report
-        TPS=`cat web3sdk-noParallel-signPackage/dist/transferTPS | grep TPS | awk '{print $2}'`
+        TPS=`cat tps_report`
         if [ `echo "$TPS < $TPS_BASE" | bc` -eq 1  ]; then
             collectLogs $NODES $TPS
         fi
@@ -116,65 +171,92 @@ officialBenchmark()
 {
     ### official bin benchmark
     echo -e "## official bin benchmark\n" >> report
-    ## 4 nodes, solidity, 50 times
+    ## 4-8 nodes, solidity, 50 times
     
     officialBinTest 4 50 false
-    
-    ## 4 nodes, precompile, 50 times
+    officialBinTest 8 50 false
+    officialBinTest 12 50 false
+    officialBinTest 16 50 false
+    officialBinTest 20 50 false
+    ## 4-8 nodes, precompile, 50 times
     
     officialBinTest 4 50 true
+    officialBinTest 8 50 true
+    officialBinTest 12 50 true
+    officialBinTest 16 50 true
+    officialBinTest 20 50 true
     
-    ## 8 nodes, precompile ,20 times
-    
-    officialBinTest 8 20 true
-    
-    ## 16 nodes, precompile ,20 times
-    
-    officialBinTest 16 20 true
-    
-    ## 32 nodes, precompile ,10 times
-    
-    officialBinTest 32 10 true
 }
 
 signPackageBenchmark()
 {
     ### signPackage bin benchmark
     echo -e "## signPackage bin benchmark\n" >> report
-    ## 4 nodes, solidity, 50 times
-    
-    signPackBinTest 4 50 false
-    
-    ## 4 nodes, precompile, 50 times
-    TPS_BASE=3300
-
-    signPackBinTest 4 50 true
-    
-    ## 8 nodes, precompile ,20 times
     TPS_BASE=2000
-    
-    signPackBinTest 8 20 true
-    
-    ## 16 nodes, precompile ,20 times
+    ## 4-8 nodes, solidity, 50 times
+    signPackBinTest 4 50 false
+    cat transferTPS_report | mutt -s "signPackBinTest 4 50 false finished"  -- 787622351@qq.com
+
+    TPS_BASE=1500
+    signPackBinTest 8 50 false
+    cat transferTPS_report | mutt -s "signPackBinTest 5 50 false finished"  -- 787622351@qq.com
+
+    TPS_BASE=1100
+    signPackBinTest 12 50 false
+    cat transferTPS_report | mutt -s "signPackBinTest 6 50 false finished"  -- 787622351@qq.com
+
     TPS_BASE=1000
+    signPackBinTest 16 50 false
+    cat transferTPS_report | mutt -s "signPackBinTest 7 50 false finished"  -- 787622351@qq.com
+
+    TPS_BASE=900
+    signPackBinTest 20 50 false
+    cat transferTPS_report | mutt -s "signPackBinTest 8 50 false finished"  -- 787622351@qq.com
+    ## 4 nodes, precompile, 50 times
+    TPS_BASE=2200
+    signPackBinTest 4 50 true
+    cat transferTPS_report | mutt -s "signPackBinTest 4 50 true finished"  -- 787622351@qq.com
+
+    TPS_BASE=1800
+    signPackBinTest 8 50 true
+    cat transferTPS_report | mutt -s "signPackBinTest 5 50 true finished"  -- 787622351@qq.com
+
+    TPS_BASE=1500
+    signPackBinTest 12 50 true
+    cat transferTPS_report | mutt -s "signPackBinTest 6 50 true finished"  -- 787622351@qq.com
+
+    TPS_BASE=1100
+    signPackBinTest 16 50 true
+    cat transferTPS_report | mutt -s "signPackBinTest 7 50 true finished"  -- 787622351@qq.com
     
-    signPackBinTest 16 20 true
-    
-    ## 32 nodes, precompile ,10 times
-    TPS_BASE=300
-    
-    signPackBinTest 32 10 true
+    TPS_BASE=1000
+    signPackBinTest 20 50 true
+    cat transferTPS_report | mutt -s "signPackBinTest 8 50 true finished"  -- 787622351@qq.com
 }
 
-
-rm transferTPS_report addTPS_report
-
 echo -e "# Benchmark Experiment Report\n" > report
+
+if [ $SIGNPACK_BENCHMARK = true ] ; then
+    signPackageBenchmark
+fi
 
 if [ $OFFICIAL_BENCHMARK = true ] ; then
     officialBenchmark
 fi
 
-if [ $SIGNPACK_BENCHMARK = true ] ; then
-    signPackageBenchmark
-fi
+cat << EOF > README
+OFFICIAL_BENCHMARK=$OFFICIAL_BENCHMARK
+SIGNPACK_BENCHMARK=$SIGNPACK_BENCHMARK
+DEBUG=$DEBUG
+
+REMOTE=$REMOTE
+EOF
+
+TIME=$(date "+%Y%m%d_%H%M%S")
+mkdir -p "tps_logs_$TIME"
+mv ./logs_* ./"tps_logs_$TIME"
+mv report ./"tps_logs_$TIME"
+mv README ./"tps_logs_$TIME"
+tar -czf ./tps.tar.gz ./"tps_logs_$TIME"
+cat ./"tps_logs_$TIME"/report | mutt -s "tps test finished" -a /home/bc/consensus/tps.tar.gz -- 787622351@qq.com
+rm -rf tps.tar.gz

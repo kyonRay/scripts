@@ -45,7 +45,6 @@ buildMarkDownCode()
     echo -e "# transferTPS\n" >> report
     cat transferTPS_report >> report
     echo -e "\n\`\`\`\n" >> report
-    rm transferTPS_report
 }
 
 officialBinTest()
@@ -70,7 +69,11 @@ officialBinTest()
                     bash official_build_chain.sh -n $NODES -p -r
                 fi
             else
-                bash official_build_chain.sh -n $NODES -p
+                if [ $DEBUG = true ];then
+                    bash official_build_chain.sh -n $NODES -p -t
+                else
+                    bash official_build_chain.sh -n $NODES -p
+                fi
             fi
         else
             if [ $REMOTE = true ];then
@@ -80,7 +83,11 @@ officialBinTest()
                     bash official_build_chain.sh -n $NODES -r
                 fi
             else
-                bash official_build_chain.sh -n $NODES
+                if [ $DEBUG = true ];then
+                    bash official_build_chain.sh -n $NODES -t
+                else
+                    bash official_build_chain.sh -n $NODES
+                fi
             fi
         fi
         cat tps_report >> transferTPS_report
@@ -114,7 +121,11 @@ signPackBinTest()
     else
         echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
     fi
-    
+
+    if [ -e transferTPS_report ];then
+        rm transferTPS_report
+    fi
+
     for i in $(seq 1  $TIMES)
     do
         if [ $PRE_COMPILE = true ]; then
@@ -184,35 +195,43 @@ signPackageBenchmark()
     TPS_BASE=2000
     ## 4-8 nodes, solidity, 50 times
     signPackBinTest 4 50 false
-    cat report | mutt -s "signPackBinTest 4 50 false finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 4 50 false finished"  -- 787622351@qq.com
+
     TPS_BASE=1500
     signPackBinTest 5 50 false
-    cat report | mutt -s "signPackBinTest 5 50 false finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 5 50 false finished"  -- 787622351@qq.com
+
     TPS_BASE=1100
     signPackBinTest 6 50 false
-    cat report | mutt -s "signPackBinTest 6 50 false finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 6 50 false finished"  -- 787622351@qq.com
+
     TPS_BASE=1000
     signPackBinTest 7 50 false
-    cat report | mutt -s "signPackBinTest 7 50 false finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 7 50 false finished"  -- 787622351@qq.com
+
     TPS_BASE=900
     signPackBinTest 8 50 false
-    cat report | mutt -s "signPackBinTest 8 50 false finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 8 50 false finished"  -- 787622351@qq.com
     ## 4 nodes, precompile, 50 times
     TPS_BASE=2200
     signPackBinTest 4 50 true
-    cat report | mutt -s "signPackBinTest 4 50 true finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 4 50 true finished"  -- 787622351@qq.com
+
     TPS_BASE=1800
     signPackBinTest 5 50 true
-    cat report | mutt -s "signPackBinTest 5 50 true finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 5 50 true finished"  -- 787622351@qq.com
+
     TPS_BASE=1500
     signPackBinTest 6 50 true
-    cat report | mutt -s "signPackBinTest 6 50 true finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 6 50 true finished"  -- 787622351@qq.com
+
     TPS_BASE=1100
     signPackBinTest 7 50 true
-    cat report | mutt -s "signPackBinTest 7 50 true finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 7 50 true finished"  -- 787622351@qq.com
+    
     TPS_BASE=1000
     signPackBinTest 8 50 true
-    cat report | mutt -s "signPackBinTest 8 50 true finished"  -- 787622351@qq.com
+    cat transferTPS_report | mutt -s "signPackBinTest 8 50 true finished"  -- 787622351@qq.com
 }
 
 echo -e "# Benchmark Experiment Report\n" > report
@@ -239,5 +258,5 @@ mv ./logs_* ./"tps_logs_$TIME"
 mv report ./"tps_logs_$TIME"
 mv README ./"tps_logs_$TIME"
 tar -czf ./tps.tar.gz ./"tps_logs_$TIME"
-cat report | mutt -s "tps test finished" -a /home/bc/consensus/tps.tar.gz -- 787622351@qq.com
+cat ./"tps_logs_$TIME"/report | mutt -s "tps test finished" -a /home/bc/consensus/tps.tar.gz -- 787622351@qq.com
 rm -rf tps.tar.gz
