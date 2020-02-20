@@ -58,6 +58,10 @@ officialBinTest()
     else
         echo -e "### $NODES nodes, solidity, $TIMES times\n" >> report
     fi
+
+    if [ -e transferTPS_report ];then
+        rm transferTPS_report
+    fi
     
     for i in $(seq 1  $TIMES)
     do
